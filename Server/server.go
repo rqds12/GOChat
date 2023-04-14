@@ -1,9 +1,36 @@
 package main
 
+/*
+* Server Specification
+* All commands are in ASCII
+*
+* Server send commands
+* CONNECTED|<name>|
+* REJECTED|<name>|<reason>|
+* PUBLIC|<sending name>|<message>|
+* JOINED|<name>|
+* LEFT|<name>|
+* ERROR|<unknown command>|
+* PRIVATE|<sender>|<message>|
+* PRIVRR|<recipient>|
+* LIST|<count>|<pipe-delimited-list-of-names>|
+* TIME|<time string>|
+*
+* Server recieve commands
+* CONNECT|<name requested>|
+* SAY|<message>|
+* EXIT|
+* PRIVATE|<recipient>|<message>|
+* LIST|
+* TIME|
+
+ */
+
 import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 	"syscall"
 )
 
@@ -12,11 +39,67 @@ const (
 	MaxEpollEvents = 32
 )
 
-func echo(fd int) {
+type Client struct {
+	fd   int
+	name string
+}
+
+func getFdFromName(clientArray *[]Client, name string) int {
+	for i := 0; i < len(*clientArray); i++ {
+		if (*clientArray)[i].name == name {
+			return (*clientArray)[i].fd
+		}
+	}
+	return -1
+}
+
+func getNameFromFd(clientArray *[]Client, fd int) string {
+	for i := 0; i < len(*clientArray); i++ {
+		if (*clientArray)[i].fd == fd {
+			return (*clientArray)[i].name
+		}
+	}
+	return ""
+}
+
+func handleConnection(fd int, clientArray *[]Client) {
 	defer syscall.Close(fd)
-	var buf [32 * 1024]byte
+	var buf [1024]byte
 	for {
 		nbytes, e := syscall.Read(fd, buf[:])
+		//zeroize buf and convert to string
+		var string = string(buf[:nbytes])
+		var strSplit = strings.Split(string, "|")
+
+		//match accoding to command
+		switch strSplit[0] {
+		case "CONNECT":
+			fmt.Println("Connect")
+			// check if name exists
+			var name = getNameFromFd(clientArray, fd)
+			if name == "" {
+				//success
+				*clientArray = append(*clientArray, Client{fd: fd, name: strSplit[1]})
+				syscall.Write(fd, []byte("CONNECTED|"+strSplit[1]))
+			} else {
+				//failed
+				//name exists
+				syscall.Write(fd, []byte("REJECTED|"+strSplit[1]+"name in use"))
+			}
+		case "SAY":
+			fmt.Println("Say")
+
+		case "EXIT":
+			fmt.Println("Exit")
+		case "PRIVATE":
+			fmt.Println("Private")
+		case "LIST":
+			fmt.Println("List")
+		case "TIME":
+			fmt.Println("Time")
+
+		}
+
 		if nbytes > 0 {
 			fmt.Printf(">>> %s", buf)
 			syscall.Write(fd, buf[:nbytes])
@@ -31,6 +114,7 @@ func echo(fd int) {
 func main() {
 	var event syscall.EpollEvent
 	var events [MaxEpollEvents]syscall.EpollEvent
+	var clientArray []Client
 
 	fd, err := syscall.Socket(syscall.AF_INET, syscall.O_NONBLOCK|syscall.SOCK_STREAM, 0)
 	if err != nil {
@@ -65,6 +149,7 @@ func main() {
 	}
 
 	for {
+		//populates events and returns the number of events
 		nevents, e := syscall.EpollWait(epfd, events[:], -1)
 		if e != nil {
 			fmt.Println("epoll_wait: ", e)
@@ -86,7 +171,7 @@ func main() {
 					os.Exit(1)
 				}
 			} else {
-				go echo(int(events[ev].Fd))
+				go handleConnection(int(events[ev].Fd), &clientArray)
 			}
 		}
 
