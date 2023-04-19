@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"syscall"
 )
@@ -44,22 +45,29 @@ type Client struct {
 	name string
 }
 
-func getFdFromName(clientArray *[]Client, name string) int {
-	for i := 0; i < len(*clientArray); i++ {
-		if (*clientArray)[i].name == name {
-			return (*clientArray)[i].fd
+func getFdFromName(clientArray []Client, name string) (int, int) {
+	for i := 0; i < len(clientArray); i++ {
+		if clientArray[i].name == name {
+			return clientArray[i].fd, i
 		}
 	}
-	return -1
+	return -1, -1
 }
 
-func getNameFromFd(clientArray *[]Client, fd int) string {
-	for i := 0; i < len(*clientArray); i++ {
-		if (*clientArray)[i].fd == fd {
-			return (*clientArray)[i].name
+func getNameFromFd(clientArray []Client, fd int) (string, int) {
+	for i := 0; i < len(clientArray); i++ {
+		if clientArray[i].fd == fd {
+			return clientArray[i].name, i
 		}
 	}
-	return ""
+	return "", -1
+}
+
+func broadcastMessage(clientArray []Client, message string) {
+	for i := 0; i < len(clientArray); i++ {
+		fdRecipient := clientArray[i].fd
+		syscall.Write(fdRecipient, []byte(message))
+	}
 }
 
 func handleConnection(fd int, clientArray *[]Client) {
@@ -76,11 +84,11 @@ func handleConnection(fd int, clientArray *[]Client) {
 		case "CONNECT":
 			fmt.Println("Connect")
 			// check if name exists
-			var name = getNameFromFd(clientArray, fd)
+			var name, _ = getNameFromFd(*clientArray, fd)
 			if name == "" {
 				//success
 				*clientArray = append(*clientArray, Client{fd: fd, name: strSplit[1]})
-				syscall.Write(fd, []byte("CONNECTED|"+strSplit[1]))
+				syscall.Write(fd, []byte("CONNECTED|"+strSplit[1]+"|"))
 			} else {
 				//failed
 				//name exists
@@ -88,15 +96,33 @@ func handleConnection(fd int, clientArray *[]Client) {
 			}
 		case "SAY":
 			fmt.Println("Say")
+			//broadcast message to all registered users
+			name, _ := getNameFromFd(*clientArray, fd)
+			message := "PUBLIC|" + name + "|" + strSplit[1]
+			broadcastMessage(*clientArray, message)
 
 		case "EXIT":
 			fmt.Println("Exit")
+			name, _ := getNameFromFd(*clientArray, fd)
+			message := "LEFT|" + name + "|"
+			broadcastMessage(*clientArray, message)
 		case "PRIVATE":
 			fmt.Println("Private")
+			sender, _ := getNameFromFd(*clientArray, fd)
+			_, indexOfRecipient := getFdFromName(*clientArray, strSplit[1])
+			message := "PRIVATE|" + sender + "|" + strSplit[2] + "|"
+			broadcastMessage((*clientArray)[indexOfRecipient:indexOfRecipient+1], message)
 		case "LIST":
 			fmt.Println("List")
+			count := len(*clientArray)
+			message := "LIST|" + strconv.Itoa(count) + "|"
+			for i := 0; i < count; i++ {
+				message += (*clientArray)[i].name + "|"
+			}
+
 		case "TIME":
 			fmt.Println("Time")
+			// time := time.Now()
 
 		}
 
