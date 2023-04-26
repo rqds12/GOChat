@@ -33,6 +33,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 const (
@@ -69,6 +70,9 @@ func broadcastMessage(clientArray []Client, message string) {
 		syscall.Write(fdRecipient, []byte(message))
 	}
 }
+func sendMessage(client Client, meessage string) {
+	broadcastMessage([]Client{client}, meessage)
+}
 
 func handleConnection(fd int, clientArray *[]Client) {
 	defer syscall.Close(fd)
@@ -82,10 +86,14 @@ func handleConnection(fd int, clientArray *[]Client) {
 		//match accoding to command
 		switch strSplit[0] {
 		case "CONNECT":
+			name := strSplit[1]
 			fmt.Println("Connect")
 			// check if name exists
-			var name, _ = getNameFromFd(*clientArray, fd)
-			if name == "" {
+			fmt.Println(fd)
+			fmt.Println(*clientArray)
+			fdExists, _ := getFdFromName(*clientArray, name)
+
+			if fdExists == -1 {
 				//success
 				*clientArray = append(*clientArray, Client{fd: fd, name: strSplit[1]})
 				syscall.Write(fd, []byte("CONNECTED|"+strSplit[1]+"|"))
@@ -103,26 +111,33 @@ func handleConnection(fd int, clientArray *[]Client) {
 
 		case "EXIT":
 			fmt.Println("Exit")
-			name, _ := getNameFromFd(*clientArray, fd)
+			name, index := getNameFromFd(*clientArray, fd)
 			message := "LEFT|" + name + "|"
 			broadcastMessage(*clientArray, message)
+			//remove from array
+			(*clientArray) = append((*clientArray)[:index], (*clientArray)[index+1:]...)
 		case "PRIVATE":
 			fmt.Println("Private")
 			sender, _ := getNameFromFd(*clientArray, fd)
 			_, indexOfRecipient := getFdFromName(*clientArray, strSplit[1])
 			message := "PRIVATE|" + sender + "|" + strSplit[2] + "|"
-			broadcastMessage((*clientArray)[indexOfRecipient:indexOfRecipient+1], message)
+			broadcastMessage([]Client{(*clientArray)[indexOfRecipient]}, message)
 		case "LIST":
 			fmt.Println("List")
+			_, senderIndex := getNameFromFd(*clientArray, fd)
 			count := len(*clientArray)
 			message := "LIST|" + strconv.Itoa(count) + "|"
 			for i := 0; i < count; i++ {
 				message += (*clientArray)[i].name + "|"
 			}
+			broadcastMessage([]Client{(*clientArray)[senderIndex]}, message)
 
 		case "TIME":
 			fmt.Println("Time")
-			// time := time.Now()
+			_, senderIndex := getNameFromFd(*clientArray, fd)
+			time := time.Now().Format("2006-01-02 15:04:05")
+			message := "TIME|" + time
+			broadcastMessage([]Client{(*clientArray)[senderIndex]}, message)
 
 		}
 
@@ -155,7 +170,7 @@ func main() {
 	}
 
 	addr := syscall.SockaddrInet4{Port: 2000}
-	copy(addr.Addr[:], net.ParseIP("0.0.0.0").To4())
+	copy(addr.Addr[:], net.ParseIP("127.0.0.1").To4())
 
 	syscall.Bind(fd, &addr)
 	syscall.Listen(fd, 10)
