@@ -141,11 +141,6 @@ func handleConnection(fd int, clientArray *[]Client) {
 
 		}
 
-		if nbytes > 0 {
-			fmt.Printf(">>> %s", buf)
-			syscall.Write(fd, buf[:nbytes])
-			fmt.Printf("<<< %s", buf)
-		}
 		if e != nil {
 			break
 		}
@@ -169,7 +164,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	addr := syscall.SockaddrInet4{Port: 2000}
+	addr := syscall.SockaddrInet4{Port: 9000}
 	copy(addr.Addr[:], net.ParseIP("127.0.0.1").To4())
 
 	syscall.Bind(fd, &addr)
