@@ -1,42 +1,52 @@
-// package main
+package main
 
-// import (
-// 	"fmt"
-// 	"net"
-// )
+ import (
+ 	"fmt"
+ 	"net"
+ )
 
-// func main() {
-// 	//connect
-// 	conn, err := net.Dial("tcp", "127.0.0.1:2000")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer conn.Close()
-// 	go print_Recieve(conn)
-// 	for {
-// 		command := getUserInput()
-// 		conn.Write([]byte(command))
 
-// 	}
+func connect(ip string, port string) {
+	//connect
+	conn, err := net.Dial("tcp", ip+":"+port)
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+	go printRecieveStdio(conn)
+	for {
+		command := getUserInput()
+		conn.Write([]byte(command))
 
-// }
+ 	}
 
-// func print_Recieve(conn net.Conn) {
-// 	for {
-// 		reply := readString(conn)
-// 		fmt.Println(reply)
-// 	}
-// }
+}
 
-// func getUserInput() string {
-// 	var name string
-// 	fmt.Scan(&name)
-// 	return name
-// }
 
-// func readString(conn net.Conn) string {
-// 	reply := make([]byte, 1024)
-// 	n, _ := conn.Read(reply)
-// 	reply_string := string(reply[:n])
-// 	return reply_string
-// }
+// printRecieve
+// blocking function to perform an action on recieved data
+// particularly for recieving and printing data
+func printRecieve(conn net.Conn, print func(string)) {
+	for {
+		reply := readString(conn)
+		print(reply)
+	}
+}
+
+func printRecieveStdio(conn net.Conn) {
+	printRecieve(conn, func(s string) { fmt.Println(s) })
+}
+
+func getUserInput() string {
+	var name string
+	fmt.Scan(&name)
+	return name
+}
+
+
+ func readString(conn net.Conn) string {
+ 	reply := make([]byte, 1024)
+ 	n, _ := conn.Read(reply)
+ 	reply_string := string(reply[:n])
+ 	return reply_string
+ }

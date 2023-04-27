@@ -141,11 +141,6 @@ func handleConnection(fd int, clientArray *[]Client) {
 
 		}
 
-		if nbytes > 0 {
-			fmt.Printf(">>> %s", buf)
-			syscall.Write(fd, buf[:nbytes])
-			fmt.Printf("<<< %s", buf)
-		}
 		if e != nil {
 			break
 		}
