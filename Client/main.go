@@ -64,6 +64,7 @@ func sendMessage() {
 }
 
 func disconnect() {
+	conn.Write([]byte("EXIT|"))
 	conn.Close()
 	app.Stop()
 	// conn.Close()
