@@ -5,14 +5,14 @@ import (
 	"net"
 )
 
-func main() {
+func connect(ip string, port string) {
 	//connect
-	conn, err := net.Dial("tcp", "127.0.0.1:2000")
+	conn, err := net.Dial("tcp", ip+":"+port)
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
-	go print_Recieve(conn)
+	go printRecieveStdio(conn)
 	for {
 		command := getUserInput()
 		conn.Write([]byte(command))
@@ -21,11 +21,18 @@ func main() {
 
 }
 
-func print_Recieve(conn net.Conn) {
+// printRecieve
+// blocking function to perform an action on recieved data
+// particularly for recieving and printing data
+func printRecieve(conn net.Conn, print func(string)) {
 	for {
 		reply := readString(conn)
-		fmt.Println(reply)
+		print(reply)
 	}
+}
+
+func printRecieveStdio(conn net.Conn) {
+	printRecieve(conn, func(s string) { fmt.Println(s) })
 }
 
 func getUserInput() string {
