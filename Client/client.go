@@ -1,27 +1,25 @@
 package main
 
- import (
- 	"fmt"
- 	"net"
- )
+import (
+	"fmt"
+	"net"
+)
 
+// func connect(ip string, port string) {
+// 	//connect
+// 	conn, err := net.Dial("tcp", ip+":"+port)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer conn.Close()
+// 	go printRecieveStdio(conn)
+// 	for {
+// 		command := getUserInput()
+// 		conn.Write([]byte(command))
 
-func connect(ip string, port string) {
-	//connect
-	conn, err := net.Dial("tcp", ip+":"+port)
-	if err != nil {
-		panic(err)
-	}
-	defer conn.Close()
-	go printRecieveStdio(conn)
-	for {
-		command := getUserInput()
-		conn.Write([]byte(command))
+// 	}
 
- 	}
-
-}
-
+// }
 
 // printRecieve
 // blocking function to perform an action on recieved data
@@ -43,10 +41,9 @@ func getUserInput() string {
 	return name
 }
 
-
- func readString(conn net.Conn) string {
- 	reply := make([]byte, 1024)
- 	n, _ := conn.Read(reply)
- 	reply_string := string(reply[:n])
- 	return reply_string
- }
+func readString(conn net.Conn) string {
+	reply := make([]byte, 1024)
+	n, _ := conn.Read(reply)
+	reply_string := string(reply[:n])
+	return reply_string
+}

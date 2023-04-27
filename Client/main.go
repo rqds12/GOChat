@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"strings"
 
@@ -22,14 +23,15 @@ var chatFeed = tview.NewBox().SetBorder(true).SetBorderColor(goColor).SetTitle("
 var messageForm = tview.NewForm()
 var ipAddr = ""
 var userName = ""
-var userMessage = ""
+var userMessage string = ""
 
-//var conn = net.Conn()
+var conn net.Conn
 
 // ----------------------- Networking Functions ----------------------------------------------
 
 func connect() {
-	conn, err := net.Dial(SERVER_TYPE, ipAddr+":"+SERVER_PORT)
+	var err error
+	conn, err = net.Dial(SERVER_TYPE, ipAddr+":"+SERVER_PORT)
 	if err != nil {
 		panic(err) // add failed connection message to page
 	}
@@ -54,11 +56,17 @@ func connect() {
 }
 
 func sendMessage() {
-	//TODO: this
+	//say
+	constructedMessage := "SAY|" + userMessage + "|"
+	fmt.Println(constructedMessage)
+	conn.Write([]byte(constructedMessage))
+
 }
 
 func disconnect() {
+	conn.Close()
 	app.Stop()
+	// conn.Close()
 	// TODO: DC from server and cleanup socket
 }
 

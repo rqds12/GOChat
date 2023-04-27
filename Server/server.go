@@ -81,6 +81,7 @@ func handleConnection(fd int, clientArray *[]Client) {
 		nbytes, e := syscall.Read(fd, buf[:])
 		//zeroize buf and convert to string
 		var string = string(buf[:nbytes])
+		fmt.Println(string)
 		var strSplit = strings.Split(string, "|")
 
 		//match accoding to command
