@@ -56,7 +56,6 @@ func connect() {
 }
 
 func sendMessage() {
-	//say
 	constructedMessage := "SAY|" + userMessage + "|"
 	fmt.Println(constructedMessage)
 	conn.Write([]byte(constructedMessage))
@@ -64,11 +63,13 @@ func sendMessage() {
 }
 
 func disconnect() {
-	conn.Write([]byte("EXIT|"))
 	conn.Close()
 	app.Stop()
-	// conn.Close()
-	// TODO: DC from server and cleanup socket
+}
+
+func exit() {
+	conn.Write([]byte("EXIT|"))
+	disconnect()
 }
 
 // --------------------------------------- UI Functions ------------------------------------------------------
@@ -99,7 +100,7 @@ func setupMessageForm() {
 	})
 	messageForm.AddButton("Send", sendMessage)
 	messageForm.SetButtonsAlign(tview.AlignRight)
-	messageForm.AddButton("Exit", disconnect)
+	messageForm.AddButton("Exit", exit)
 }
 
 // Populates the chatroom flexbox
