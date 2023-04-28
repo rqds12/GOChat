@@ -105,6 +105,7 @@ func handleConnection(fd int, clientArray *[]Client) {
 				//failed
 				//name exists
 				syscall.Write(fd, []byte("REJECTED|"+strSplit[1]+"name in use"))
+				syscall.Close(fd)
 			}
 		case "SAY":
 			fmt.Println("Say")
@@ -125,9 +126,18 @@ func handleConnection(fd int, clientArray *[]Client) {
 			fmt.Println(index)
 		case "PRIVATE":
 			fmt.Println("Private")
+			name := strSplit[1]
+			recievedMessage := strSplit[2]
+			var message = ""
 			sender, _ := getNameFromFd(*clientArray, fd)
-			_, indexOfRecipient := getFdFromName(*clientArray, strSplit[1])
-			message := "PRIVATE|" + sender + "|" + strSplit[2] + "|"
+			_, indexOfRecipient := getFdFromName(*clientArray, name)
+			if indexOfRecipient > 0 {
+				message = "PRIVATE|" + sender + "|" + strSplit[2] + "|"
+			} else {
+				//send error
+				message = "PRIVERR|" + name + "|" + recievedMessage + "|"
+
+			}
 			broadcastMessage([]Client{(*clientArray)[indexOfRecipient]}, message)
 		case "LIST":
 			fmt.Println("List")
@@ -144,6 +154,10 @@ func handleConnection(fd int, clientArray *[]Client) {
 			_, senderIndex := getNameFromFd(*clientArray, fd)
 			time := time.Now().Format("2006-01-02 15:04:05")
 			message := "TIME|" + time
+			broadcastMessage([]Client{(*clientArray)[senderIndex]}, message)
+		default:
+			message := "ERROR|" + strSplit[0] + "|"
+			_, senderIndex := getNameFromFd(*clientArray, fd)
 			broadcastMessage([]Client{(*clientArray)[senderIndex]}, message)
 
 		}
