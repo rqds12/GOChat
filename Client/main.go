@@ -20,12 +20,11 @@ var userNameForm = tview.NewForm()
 var app = tview.NewApplication()
 var pages = tview.NewPages()
 var chatRoom = tview.NewFlex()
-var chatFeed = tview.NewBox().SetBorder(true).SetBorderColor(goColor).SetTitle("GOChat")
+var chatFeed = tview.NewTextView().SetWrap(true).SetWordWrap(true)
 var messageForm = tview.NewForm()
 var ipAddr = ""
 var userName = ""
 var userMessage = ""
-var servChan = make(chan string)
 var mChan = make(chan string)
 var disconChan = make(chan int)
 
@@ -39,21 +38,41 @@ func disconnect() {
 	disconChan <- 1
 }
 
-func handleServerMessage() {
-
+func handleServerMessage(message string) {
+	mSplit := strings.Split(message, "|")
+	switch mSplit[0] {
+	case "PUBLIC":
+		_, err := chatFeed.Write([]byte("[" + mSplit[1] + "]: " + mSplit[2] + "\n"))
+		if err != nil {
+			panic(err)
+		}
+	case "JOINED":
+		_, err := chatFeed.Write([]byte(mSplit[1] + " has joined the chat.\n"))
+		if err != nil {
+			panic(err)
+		}
+	case "LEFT":
+		_, err := chatFeed.Write([]byte(mSplit[1] + " has left the chat.\n"))
+		if err != nil {
+			panic(err)
+		}
+	}
+	app.Draw()
 }
 
 // ---------------------------------------- Threading Stuff -------------------------------------------------
 
 // Process to check for new data from the socket and pipe it into the channel
-func readServer(conn net.Conn, m *sync.Mutex) {
+func readServer(conn net.Conn) {
 	for {
 		buff := make([]byte, 1024)
 		mLen, err := conn.Read(buff)
 		if err != nil && err != io.EOF {
 			panic(err)
 		}
-		servChan <- string(buff[:mLen])
+		if mLen > 0 {
+			handleServerMessage(string(buff[:mLen]))
+		}
 	}
 }
 
@@ -116,7 +135,7 @@ func handleConn() {
 	}
 
 	// Spins up the server and message handling threads if connection successful
-	go readServer(conn, &m)
+	go readServer(conn)
 	go messageSender(conn, &m)
 
 }
@@ -151,13 +170,14 @@ func setupMessageForm() {
 	})
 	messageForm.AddButton("Send", sendMessage)
 	messageForm.SetButtonsAlign(tview.AlignRight)
-	messageForm.AddButton("Exit", exit)
+	messageForm.AddButton("Exit", disconnect)
 }
 
 // Populates the chatroom flexbox
 func setupChatRoom() {
 	setupMessageForm()
 	chatRoom.SetDirection(tview.FlexRow)
+	chatFeed.SetBorder(true).SetBorderColor(goColor).SetTitle("GOChat")
 	chatRoom.AddItem(chatFeed, 0, 5, false) // This sets up flexbox so that chatFeed is 5 times the size of messageForm
 	chatRoom.AddItem(messageForm, 0, 1, false)
 
