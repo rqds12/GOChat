@@ -39,7 +39,13 @@ func disconnect() {
 	disconChan <- 1
 }
 
-func handleServerMessage() {
+func handleServerMessage(message string) {
+	mSplit := strings.Split(message, "|")
+	switch mSplit[0] {
+	case "PUBLIC":
+	case "JOINED":
+	case "LEFT":
+	}
 
 }
 
@@ -151,7 +157,7 @@ func setupMessageForm() {
 	})
 	messageForm.AddButton("Send", sendMessage)
 	messageForm.SetButtonsAlign(tview.AlignRight)
-	messageForm.AddButton("Exit", exit)
+	messageForm.AddButton("Exit", disconnect)
 }
 
 // Populates the chatroom flexbox
