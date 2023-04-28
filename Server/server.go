@@ -102,7 +102,7 @@ func handleConnection(fd int, clientArray *[]Client) {
 				*clientArray = append(*clientArray, Client{fd: fd, name: strSplit[1]})
 				syscall.Write(fd, []byte("CONNECTED|"+strSplit[1]+"|"))
 				//notify users of newly joined user
-				message := "PUBLIC|SERVER|" + name + " is joining the chat|"
+				message := "JOINED|" + name + "|"
 				broadcastMessage(*clientArray, message)
 			} else {
 				//failed

@@ -57,6 +57,7 @@ func handleServerMessage(message string) {
 			panic(err)
 		}
 	}
+	// Redraws the screen (Writing does not do this automatically for some reason :(
 	app.Draw()
 }
 
