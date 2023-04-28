@@ -107,15 +107,15 @@ func handleConnection(fd int, clientArray *[]Client) {
 			} else {
 				//failed
 				//name exists
-				syscall.Write(fd, []byte("REJECTED|"+strSplit[1]+"name in use"))
+				syscall.Write(fd, []byte("REJECTED|"+strSplit[1]+"name in use|"))
 				syscall.Close(fd)
 			}
 		case "SAY":
 			fmt.Println("Say")
 			//broadcast message to all registered users
-			name, _ := getNameFromFd(*clientArray, fd)
-			message := "PUBLIC|" + name + "|" + strSplit[1]
-			broadcastMessage(*clientArray, message)
+			name, index := getNameFromFd(*clientArray, fd)
+			message := "PUBLIC|" + name + "|" + strSplit[1] +"|"
+			broadcastMessage(append((*clientArray)[:index], (*clientArray)[index+1:]...), message)
 
 		case "EXIT":
 			fmt.Println("Exit")
