@@ -101,6 +101,9 @@ func handleConnection(fd int, clientArray *[]Client) {
 				//success
 				*clientArray = append(*clientArray, Client{fd: fd, name: strSplit[1]})
 				syscall.Write(fd, []byte("CONNECTED|"+strSplit[1]+"|"))
+				//notify users of newly joined user
+				message := "PUBLIC|SERVER|" + name + " is joining the chat|"
+				broadcastMessage(*clientArray, message)
 			} else {
 				//failed
 				//name exists
@@ -123,6 +126,8 @@ func handleConnection(fd int, clientArray *[]Client) {
 			fmt.Println(index)
 			(*clientArray) = append((*clientArray)[:index], (*clientArray)[index+1:]...)
 			broadcastMessage(*clientArray, message)
+			//notify users of left user
+			message = "PUBLIC|SERVER|" + name + " is leaving the server|"
 			fmt.Println(index)
 		case "PRIVATE":
 			fmt.Println("Private")
