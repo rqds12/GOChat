@@ -151,7 +151,7 @@ func setupMessageForm() {
 	})
 	messageForm.AddButton("Send", sendMessage)
 	messageForm.SetButtonsAlign(tview.AlignRight)
-	messageForm.AddButton("Exit", disconnect)
+	messageForm.AddButton("Exit", exit)
 }
 
 // Populates the chatroom flexbox

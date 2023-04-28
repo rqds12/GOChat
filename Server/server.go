@@ -80,7 +80,11 @@ func handleConnection(fd int, clientArray *[]Client) {
 	for {
 		nbytes, e := syscall.Read(fd, buf[:])
 		//zeroize buf and convert to string
+		if nbytes <= 0 {
+			break
+		}
 		var string = string(buf[:nbytes])
+		fmt.Println(string)
 		var strSplit = strings.Split(string, "|")
 
 		//match accoding to command
@@ -113,9 +117,12 @@ func handleConnection(fd int, clientArray *[]Client) {
 			fmt.Println("Exit")
 			name, index := getNameFromFd(*clientArray, fd)
 			message := "LEFT|" + name + "|"
-			broadcastMessage(*clientArray, message)
 			//remove from array
+			syscall.Close(fd)
+			fmt.Println(index)
 			(*clientArray) = append((*clientArray)[:index], (*clientArray)[index+1:]...)
+			broadcastMessage(*clientArray, message)
+			fmt.Println(index)
 		case "PRIVATE":
 			fmt.Println("Private")
 			sender, _ := getNameFromFd(*clientArray, fd)
@@ -189,7 +196,12 @@ func main() {
 		nevents, e := syscall.EpollWait(epfd, events[:], -1)
 		if e != nil {
 			fmt.Println("epoll_wait: ", e)
-			break
+			//try again
+			nevents, e = syscall.EpollWait(epfd, events[:], -1)
+			if e != nil {
+				fmt.Println("epoll_wait final: ", e)
+				break
+			}
 		}
 
 		for ev := 0; ev < nevents; ev++ {
