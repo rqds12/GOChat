@@ -21,17 +21,22 @@ var app = tview.NewApplication()
 var pages = tview.NewPages()
 var chatRoom = tview.NewFlex()
 var chatFeed = tview.NewTextView().SetWrap(true).SetWordWrap(true)
-var messageForm = tview.NewForm()
+var messageForm = tview.NewFlex()
+var userMessage = ""
+var messageField = tview.NewInputField().SetFieldWidth(500).SetChangedFunc(func(enteredUserName string) {
+	userMessage = enteredUserName
+})
 var ipAddr = ""
 var userName = ""
-var userMessage = ""
 var mChan = make(chan string)
 var disconChan = make(chan int)
 
 // ----------------------- Networking Functions ----------------------------------------------
 
 func sendMessage() {
-	mChan <- userMessage
+	if len(userMessage) > 0 {
+		mChan <- userMessage
+	}
 }
 
 func disconnect() {
@@ -111,7 +116,7 @@ func handleConn() {
 	if err != nil {
 		panic(err) // add failed connection message to page
 	}
-	conn.Write([]byte("CONNECT|" + userName))
+	conn.Write([]byte("CONNECT|" + userName + "|"))
 	buff := make([]byte, 1024)
 	mLen, err := conn.Read(buff)
 	if err != nil {
@@ -150,6 +155,7 @@ func setupUserNameForm() {
 		return textToCheck != ""
 	}, func(enteredUserName string) {
 		userName = enteredUserName
+
 	})
 	userNameForm.AddInputField("IP", "", 50, nil, func(enteredIp string) {
 		ipAddr = enteredIp
@@ -163,15 +169,12 @@ func setupUserNameForm() {
 
 // Populates the message form
 func setupMessageForm() {
-	messageForm.SetButtonsAlign(tview.AlignLeft)
-	messageForm.AddInputField("", "", 500, func(textToCheck string, lastChar rune) bool {
-		return textToCheck != ""
-	}, func(message string) {
-		userMessage = message
-	})
-	messageForm.AddButton("Send", sendMessage)
-	messageForm.SetButtonsAlign(tview.AlignRight)
-	messageForm.AddButton("Exit", disconnect)
+	sendButton := tview.NewButton("Send").SetSelectedFunc(sendMessage)
+	exitButton := tview.NewButton("Exit")
+	messageForm.SetDirection(tview.FlexRow)
+	messageForm.AddItem(messageField, 1, 0, true)
+	messageForm.AddItem(sendButton, 1, 0, true)
+	messageForm.AddItem(exitButton, 1, 0, true)
 }
 
 // Populates the chatroom flexbox
