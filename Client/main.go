@@ -22,11 +22,8 @@ var app = tview.NewApplication()
 var pages = tview.NewPages()
 var chatRoom = tview.NewFlex()
 var chatFeed = tview.NewTextView().SetWrap(true).SetWordWrap(true)
-var messageForm = tview.NewFlex()
+var messageForm = tview.NewForm()
 var userMessage = ""
-var messageField = tview.NewInputField().SetFieldWidth(500).SetChangedFunc(func(enteredUserName string) {
-	userMessage = enteredUserName
-})
 var ipAddr = ""
 var userName = ""
 var mChan = make(chan string)
@@ -38,6 +35,7 @@ func sendMessage() {
 	if len(userMessage) > 0 {
 		mChan <- userMessage
 		chatFeed.Write([]byte("[" + userName + "]: " + userMessage + "\n"))
+		setupMessageForm()
 	}
 }
 
@@ -236,12 +234,13 @@ func setupUserNameForm() {
 
 // Populates the message form
 func setupMessageForm() {
-	sendButton := tview.NewButton("Send").SetSelectedFunc(sendMessage)
-	exitButton := tview.NewButton("Exit").SetSelectedFunc(disconnect)
-	messageForm.SetDirection(tview.FlexRow)
-	messageForm.AddItem(messageField, 1, 0, true)
-	messageForm.AddItem(sendButton, 1, 0, true)
-	messageForm.AddItem(exitButton, 1, 0, true)
+	messageForm.Clear(true)
+	messageForm.SetButtonsAlign(tview.AlignRight)
+	messageForm.AddInputField("", "", 500, nil, func(text string) {
+		userMessage = text
+	})
+	messageForm.AddButton("Send", sendMessage)
+	messageForm.AddButton("Exit", disconnect)
 }
 
 // Populates the chatroom flexbox
