@@ -124,7 +124,7 @@ func handleConnection() {
 				addr := conn.RemoteAddr().String()
 				s := fmt.Sprintf("%v tried connecting as %v.  Request rejected", addr, name)
 				logCommands(s)
-				conn.Write([]byte("REJECTED|" + strSplit[1] + "|Name in Taken|"))
+				conn.Write([]byte("REJECTED|" + strSplit[1] + "|Name is Taken|"))
 
 			}
 		case "SAY":
@@ -210,6 +210,8 @@ func handleConn(c Client) {
 		buff := make([]byte, 1024)
 		m, err := conn.Read([]byte(buff))
 		if err != nil {
+			_, index := getNameFromClient(clientArray, Client{conn, ""})
+			(clientArray) = append((clientArray)[:index], (clientArray)[index+1:]...)
 			return
 			// panic(err)
 		}
