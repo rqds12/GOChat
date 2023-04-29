@@ -139,16 +139,17 @@ func handleConnection(fd int, clientArray *[]Client) {
 			name := strSplit[1]
 			recievedMessage := strSplit[2]
 			var message = ""
-			sender, _ := getNameFromFd(*clientArray, fd)
+			sender, senderIndex := getNameFromFd(*clientArray, fd)
 			_, indexOfRecipient := getFdFromName(*clientArray, name)
 			if indexOfRecipient > 0 {
 				message = "PRIVATE|" + sender + "|" + strSplit[2] + "|"
+				broadcastMessage([]Client{(*clientArray)[indexOfRecipient]}, message)
 			} else {
 				//send error
 				message = "PRIVERR|" + name + "|" + recievedMessage + "|"
+				broadcastMessage([]Client{(*clientArray)[senderIndex]}, message)
 
 			}
-			broadcastMessage([]Client{(*clientArray)[indexOfRecipient]}, message)
 		case "LIST":
 			fmt.Println("List")
 			_, senderIndex := getNameFromFd(*clientArray, fd)
