@@ -155,6 +155,7 @@ func parseMessage(conn net.Conn, message string) {
 		case "time":
 			send = "TIME|"
 		}
+
 	} else {
 		send = "SAY|" + message + "|"
 	}
