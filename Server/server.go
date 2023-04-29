@@ -114,8 +114,13 @@ func handleConnection(fd int, clientArray *[]Client) {
 			fmt.Println("Say")
 			//broadcast message to all registered users
 			name, index := getNameFromFd(*clientArray, fd)
-			message := "PUBLIC|" + name + "|" + strSplit[1] +"|"
-			broadcastMessage(append((*clientArray)[:index], (*clientArray)[index+1:]...), message)
+			message := "PUBLIC|" + name + "|" + strSplit[1] + "|"
+			temp := make([]Client, len(*clientArray))
+			copy(temp, *clientArray)
+			test := temp[:index]
+			rest := temp[index+1:]
+			test = append(test, rest...)
+			broadcastMessage(test, message)
 
 		case "EXIT":
 			fmt.Println("Exit")
