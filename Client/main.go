@@ -62,6 +62,12 @@ func handleServerMessage(message string) {
 		if err != nil {
 			panic(err)
 		}
+	case "TIME":
+		_, err := chatFeed.Write([]byte("Server time is: " + mSplit[1] + "\n"))
+		if err != nil {
+			panic(err)
+		}
+
 	}
 	// Redraws the screen (Writing does not do this automatically for some reason :(
 	app.Draw()
@@ -92,9 +98,37 @@ func messageSender(conn net.Conn, m *sync.Mutex) {
 		}
 		// Lock for writing to channel
 		m.Lock()
-		conn.Write([]byte("SAY|" + message + "|"))
+		parseMessage(conn, message)
+		// conn.Write([]byte("SAY|" + message + "|"))
 		m.Unlock()
 	}
+}
+
+func parseMessage(conn net.Conn, message string) {
+	send := ""
+
+	if message[0:1] == "/" {
+		//special command
+		//pipe delimited command
+		cmd := strings.Split(message[1:], "|")
+		switch cmd[0] {
+		case "private":
+			if len(cmd) != 3 {
+				//invalid command
+				//TODO
+				break
+			}
+			send = "PRIVATE|" + cmd[1] + "|" + cmd[2] + "|"
+		case "list":
+			send = "LIST|"
+		case "time":
+			send = "TIME|"
+		}
+	} else {
+		send = "SAY|" + message + "|"
+	}
+	conn.Write([]byte(send))
+
 }
 
 // Waits for any input on the disconnect channel then disconnects
