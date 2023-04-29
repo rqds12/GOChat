@@ -40,6 +40,10 @@ func sendMessage() {
 }
 
 func disconnect() {
+	disconChan <- 0
+}
+
+func disconnectAndClose() {
 	disconChan <- 1
 }
 
@@ -163,9 +167,12 @@ func parseMessage(conn net.Conn, message string) {
 
 // Waits for any input on the disconnect channel then disconnects
 // This is probably a weird way to do this
+// If it receives a 1 on the disconnect signal, also stops app
 func disconnector(conn net.Conn, m *sync.Mutex) {
-	<-disconChan
-	app.Stop()
+	code := <-disconChan
+	if code == 1 {
+		app.Stop()
+	}
 	m.Lock()
 	_, err := conn.Write([]byte("EXIT|"))
 	if err != nil {
@@ -179,7 +186,8 @@ func disconnector(conn net.Conn, m *sync.Mutex) {
 func handleConn() {
 	conn, err := net.Dial(SERVER_TYPE, ipAddr+":"+SERVER_PORT)
 	if err != nil {
-		panic(err) // add failed connection message to page
+		writeError("Failed to connect to that IP.")
+		return
 	}
 	conn.Write([]byte("CONNECT|" + userName + "|"))
 	buff := make([]byte, 1024)
@@ -200,9 +208,9 @@ func handleConn() {
 		break
 	case "REJECTED":
 		disconnect()
+		reason := mSplit[2]
+		writeError("Connection refused by server. Reason: " + reason)
 		return
-		//reason := mSplit[2]
-		//TODO: add reason to login page
 	}
 
 	// Spins up the server and message handling threads if connection successful
@@ -214,8 +222,9 @@ func handleConn() {
 // --------------------------------------- UI Functions ------------------------------------------------------
 
 // Function to populate the form with inputs
-func setupUserNameForm() {
-	userNameForm.SetButtonsAlign(tview.AlignCenter)
+func setupUserNameForm(err string) {
+	userNameForm.Clear(true)
+	userNameForm.SetButtonsAlign(tview.AlignLeft)
 	userNameForm.AddInputField("Username", "", 50, func(textToCheck string, lastChar rune) bool {
 		return textToCheck != ""
 	}, func(enteredUserName string) {
@@ -229,6 +238,7 @@ func setupUserNameForm() {
 	userNameForm.AddButton("Exit", func() {
 		app.Stop()
 	})
+	userNameForm.AddTextView("", err, 0, 0, false, false)
 	userNameForm.SetBorder(true).SetBorderColor(goColor).SetTitle("GOChat")
 }
 
@@ -240,7 +250,12 @@ func setupMessageForm() {
 		userMessage = text
 	})
 	messageForm.AddButton("Send", sendMessage)
-	messageForm.AddButton("Exit", disconnect)
+	messageForm.AddButton("Exit", disconnectAndClose)
+}
+
+// Function to write connection errors to the connection form
+func writeError(err string) {
+	setupUserNameForm("ERROR: " + err)
 }
 
 // Populates the chatroom flexbox
@@ -254,7 +269,7 @@ func setupChatRoom() {
 }
 
 func main() {
-	setupUserNameForm()
+	setupUserNameForm("")
 	setupChatRoom()
 	pages.AddPage("Chat", chatRoom, true, false)
 	pages.AddPage("Login", userNameForm, true, true)
