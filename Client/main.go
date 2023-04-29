@@ -1,5 +1,11 @@
 package main
 
+/*
+* Author: Alex Wildman
+* Course: COSC 4653 Advanced Networks
+* Description: Implements a client that is compatable with the
+* protocol specifications
+ */
 import (
 	"io"
 	"net"
