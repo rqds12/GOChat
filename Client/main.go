@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -63,21 +64,40 @@ func handleServerMessage(message string) {
 			panic(err)
 		}
 	case "ERROR":
-		//deal with unknown command
+		//deal with unknown command()
+		_, err := chatFeed.Write([]byte("[SERVER]: UNKNOWN COMMAND " + mSplit[1] + "\n"))
+		if err != nil {
+			panic(err)
+		}
 	case "PRIVATE":
 		_, err := chatFeed.Write([]byte("[" + mSplit[1] + "]:" + mSplit[2] + "\n"))
 		if err != nil {
 			panic(err)
 		}
-	case "PRIVRR":
+	case "PRIVERR":
 		//user doesn't exist
-
+		_, err := chatFeed.Write([]byte("[SERVER]: USER " + mSplit[1] + " is not in the server.\n"))
+		if err != nil {
+			panic(err)
+		}
 	case "TIME":
 		_, err := chatFeed.Write([]byte("Server time is: " + mSplit[1] + "\n"))
 		if err != nil {
 			panic(err)
 		}
 	case "LIST":
+		s := ""
+		count, err := strconv.Atoi(mSplit[1])
+		if err != nil {
+			panic(err)
+		}
+		for i := 0; i < count; i++ {
+			s += mSplit[i+2] + "|"
+		}
+		_, err = chatFeed.Write([]byte("[SERVER]: List of users: " + s + "\n"))
+		if err != nil {
+			panic(err)
+		}
 
 	}
 	// Redraws the screen (Writing does not do this automatically for some reason :(
