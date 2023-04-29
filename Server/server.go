@@ -211,11 +211,14 @@ func handleConn(c Client) {
 		m, err := conn.Read([]byte(buff))
 		if err != nil {
 			name, index := getNameFromClient(clientArray, Client{conn, ""})
-			addr := conn.RemoteAddr().String()
-			s := fmt.Sprintf("%v [%v] disconnected. ", addr, name)
-			logCommands(s)
+			if index > -1 {
+				addr := conn.RemoteAddr().String()
+				s := fmt.Sprintf("%v [%v] disconnected. ", addr, name)
+				logCommands(s)
 
-			(clientArray) = append((clientArray)[:index], (clientArray)[index+1:]...)
+				(clientArray) = append((clientArray)[:index], (clientArray)[index+1:]...)
+			}
+
 			return
 			// panic(err)
 		}

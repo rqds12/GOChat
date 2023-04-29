@@ -103,3 +103,32 @@
 [2023-04-29 15:13:20]: 127.0.0.1:52456 [a] disconnected. 
 [2023-04-29 15:20:01]: 127.0.0.1:52495  connected as a
 [2023-04-29 15:20:12]: 127.0.0.1:52506  connected as a
+[2023-04-29 15:22:49]: 127.0.0.1:52543  connected as a
+[2023-04-29 15:22:50]: 127.0.0.1:52543 [a] disconnected. 
+[2023-04-29 15:22:56]: 127.0.0.1:52544  connected as a
+[2023-04-29 15:22:59]: 127.0.0.1:52544 [a] disconnected. 
+[2023-04-29 15:23:27]: 127.0.0.1:52560  connected as a
+[2023-04-29 15:23:30]: 127.0.0.1:52561 tried connecting as a.  Request rejected
+[2023-04-29 15:23:35]: 127.0.0.1:52561 [] disconnected. 
+[2023-04-29 15:23:57]: 127.0.0.1:52566  connected as a
+[2023-04-29 15:24:00]: 127.0.0.1:52567 tried connecting as a.  Request rejected
+[2023-04-29 15:24:02]: 127.0.0.1:52567 tried connecting as a.  Request rejected
+[2023-04-29 15:24:03]: 127.0.0.1:52567 tried connecting as a.  Request rejected
+[2023-04-29 15:24:04]: 127.0.0.1:52567 [] disconnected. 
+[2023-04-29 15:24:20]: 127.0.0.1:52572  connected as a
+[2023-04-29 15:24:26]: 127.0.0.1:52572 [a] disconnected. 
+[2023-04-29 15:24:31]: 127.0.0.1:52574  connected as a
+[2023-04-29 15:24:34]: 127.0.0.1:52576 tried connecting as a.  Request rejected
+[2023-04-29 15:24:36]: 127.0.0.1:52576 [] disconnected. 
+[2023-04-29 15:34:19]: 127.0.0.1:52617  connected as a
+[2023-04-29 15:34:30]: 127.0.0.1:52618 tried connecting as a.  Request rejected
+[2023-04-29 15:34:38]: 127.0.0.1:52618 [] disconnected. 
+[2023-04-29 15:36:27]: 127.0.0.1:52627  connected as a
+[2023-04-29 15:36:34]: 127.0.0.1:52628 tried connecting as a.  Request rejected
+[2023-04-29 15:36:34]: 127.0.0.1:52628 [] disconnected. 
+[2023-04-29 15:36:34]: 127.0.0.1:52628 [] disconnected. 
+[2023-04-29 15:38:02]: 127.0.0.1:52640  connected as a
+[2023-04-29 15:38:05]: 127.0.0.1:52641 tried connecting as a.  Request rejected
+[2023-04-29 15:38:07]: 127.0.0.1:52642 tried connecting as a.  Request rejected
+[2023-04-29 15:38:08]: 127.0.0.1:52643 tried connecting as a.  Request rejected
+[2023-04-29 15:38:10]: 127.0.0.1:52645 tried connecting as a.  Request rejected
