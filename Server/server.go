@@ -1,6 +1,13 @@
 package main
 
 /*
+* Author: Seth Kroeker
+* Course: COSC 4653 Advanced Networks
+* Description: Implements the server according to the
+* protocol specifications
+ */
+
+/*
 * Server Specification
 * All commands are in ASCII
 *
@@ -215,20 +222,17 @@ func handleConn(c Client) {
 				addr := conn.RemoteAddr().String()
 				s := fmt.Sprintf("%v [%v] disconnected. ", addr, name)
 				logCommands(s)
-
 				(clientArray) = append((clientArray)[:index], (clientArray)[index+1:]...)
 			}
-
 			return
 			// panic(err)
 		}
-
+		//pipe the Client and the read message into a channel
 		mChan <- struct {
 			Client
 			string
 		}{c, string(buff[:m])}
 	}
-
 }
 
 func main() {
