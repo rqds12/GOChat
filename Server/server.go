@@ -114,7 +114,7 @@ func handleConnection() {
 		var strSplit = strings.Split(msg, "|")
 
 		//match accoding to command
-		switch strSplit[0] {
+		switch strings.ToUpper(strSplit[0]) {
 		case "CONNECT":
 			name := strSplit[1]
 			fmt.Println("Connect")
