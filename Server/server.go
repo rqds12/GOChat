@@ -112,42 +112,54 @@ func handleConnection() {
 			name := strSplit[1]
 			// check if name exists
 			clientExist, _ := getClientFromName(clientArray, name)
+			if len(strSplit[1]) <= 50 {
 
-			if clientExist.name == "" {
-				//success
-				clientArray = append(clientArray, Client{conn: conn, name: strSplit[1]})
-				conn.Write([]byte("CONNECTED|" + strSplit[1] + "|"))
-				// sa, err :=
-				addr := conn.RemoteAddr().String()
-				s := fmt.Sprintf("%v  connected as %v", addr, name)
-				logCommands(s)
+				if clientExist.name == "" {
+					//success
+					clientArray = append(clientArray, Client{conn: conn, name: strSplit[1]})
+					conn.Write([]byte("CONNECTED|" + strSplit[1] + "|"))
+					// sa, err :=
+					addr := conn.RemoteAddr().String()
+					s := fmt.Sprintf("%v  connected as %v", addr, name)
+					logCommands(s)
 
-				//notify users of newly joined user
-				message := "JOINED|" + name + "|"
-				broadcastMessage(clientArray, message)
+					//notify users of newly joined user
+					message := "JOINED|" + name + "|"
+					broadcastMessage(clientArray, message)
+				} else {
+					//failed
+					//name exists
+					addr := conn.RemoteAddr().String()
+					s := fmt.Sprintf("%v tried connecting as %v.  Request rejected", addr, name)
+					logCommands(s)
+					conn.Write([]byte("REJECTED|" + strSplit[1] + "|Name is Taken|"))
+
+				}
 			} else {
-				//failed
-				//name exists
 				addr := conn.RemoteAddr().String()
-				s := fmt.Sprintf("%v tried connecting as %v.  Request rejected", addr, name)
+				s := fmt.Sprintf("%v tried connecting as %v.  Request rejected. Name to long", addr, name)
 				logCommands(s)
-				conn.Write([]byte("REJECTED|" + strSplit[1] + "|Name is Taken|"))
-
 			}
 		case "SAY":
 			//broadcast message to all registered users
-			name, index := getNameFromClient(clientArray, Client{conn, ""})
-			message := "PUBLIC|" + name + "|" + strSplit[1] + "|"
-			temp := make([]Client, len(clientArray))
-			copy(temp, clientArray)
-			test := temp[:index]
-			rest := temp[index+1:]
-			test = append(test, rest...)
-			broadcastMessage(test, message)
-			//log
-			addr := conn.RemoteAddr().String()
-			s := fmt.Sprintf("%v %v said %v. ", addr, name, message)
-			logCommands(s)
+			if len(strSplit[1]) > 200 {
+				addr := conn.RemoteAddr().String()
+				s := fmt.Sprintf("%v gave a message longer than 200 chars", addr)
+				logCommands(s)
+			} else {
+				name, index := getNameFromClient(clientArray, Client{conn, ""})
+				message := "PUBLIC|" + name + "|" + strSplit[1] + "|"
+				temp := make([]Client, len(clientArray))
+				copy(temp, clientArray)
+				test := temp[:index]
+				rest := temp[index+1:]
+				test = append(test, rest...)
+				broadcastMessage(test, message)
+				//log
+				addr := conn.RemoteAddr().String()
+				s := fmt.Sprintf("%v %v said %v. ", addr, name, message)
+				logCommands(s)
+			}
 		case "EXIT":
 			name, index := getNameFromClient(clientArray, Client{conn, ""})
 			message := "LEFT|" + name + "|"
@@ -161,28 +173,34 @@ func handleConnection() {
 			broadcastMessage(clientArray, message)
 
 		case "PRIVATE":
-			name := strSplit[1]
-			recievedMessage := strSplit[2]
-			var message = ""
-			sender, senderIndex := getNameFromClient(clientArray, Client{conn, ""})
-			recipient, indexOfRecipient := getClientFromName(clientArray, name)
-			if indexOfRecipient >= 0 {
-				message = "PRIVATE|" + sender + "|" + strSplit[2] + "|"
-				broadcastMessage([]Client{(clientArray)[indexOfRecipient]}, message)
-
+			if len(strSplit[2]) > 200 {
 				addr := conn.RemoteAddr().String()
-				addr_r := recipient.conn.RemoteAddr().String()
-				s := fmt.Sprintf("%v messaged %v ", addr, addr_r)
+				s := fmt.Sprintf("%v gave a message longer than 200 chars", addr)
 				logCommands(s)
-
 			} else {
-				//send error
-				message = "PRIVERR|" + name + "|" + recievedMessage + "|"
-				broadcastMessage([]Client{(clientArray)[senderIndex]}, message)
+				name := strSplit[1]
+				recievedMessage := strSplit[2]
+				var message = ""
+				sender, senderIndex := getNameFromClient(clientArray, Client{conn, ""})
+				recipient, indexOfRecipient := getClientFromName(clientArray, name)
+				if indexOfRecipient >= 0 {
+					message = "PRIVATE|" + sender + "|" + strSplit[2] + "|"
+					broadcastMessage([]Client{(clientArray)[indexOfRecipient]}, message)
 
-				addr := conn.RemoteAddr().String()
-				s := fmt.Sprintf("%v attempted to message a nonexistent user", addr)
-				logCommands(s)
+					addr := conn.RemoteAddr().String()
+					addr_r := recipient.conn.RemoteAddr().String()
+					s := fmt.Sprintf("%v messaged %v ", addr, addr_r)
+					logCommands(s)
+
+				} else {
+					//send error
+					message = "PRIVERR|" + name + "|" + recievedMessage + "|"
+					broadcastMessage([]Client{(clientArray)[senderIndex]}, message)
+
+					addr := conn.RemoteAddr().String()
+					s := fmt.Sprintf("%v attempted to message a nonexistent user", addr)
+					logCommands(s)
+				}
 			}
 		case "LIST":
 			_, senderIndex := getNameFromClient(clientArray, Client{conn, ""})

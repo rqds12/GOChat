@@ -132,3 +132,9 @@
 [2023-04-29 15:38:07]: 127.0.0.1:52642 tried connecting as a.  Request rejected
 [2023-04-29 15:38:08]: 127.0.0.1:52643 tried connecting as a.  Request rejected
 [2023-04-29 15:38:10]: 127.0.0.1:52645 tried connecting as a.  Request rejected
+[2023-04-29 16:23:29]: 127.0.0.1:53048  connected as a
+[2023-04-29 16:23:32]: 127.0.0.1:53048 a said PUBLIC|a|hi|. 
+[2023-04-29 16:45:20]: 127.0.0.1:53157  connected as a
+[2023-04-29 16:45:24]: 127.0.0.1:53157 a said PUBLIC|a|a|. 
+[2023-04-29 16:45:43]: 127.0.0.1:53157 gave a message longer than 200 chars
+[2023-04-29 16:46:13]: 127.0.0.1:53157 [a] disconnected. 
