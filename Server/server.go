@@ -124,7 +124,7 @@ func handleConnection() {
 				addr := conn.RemoteAddr().String()
 				s := fmt.Sprintf("%v tried connecting as %v.  Request rejected", addr, name)
 				logCommands(s)
-				conn.Write([]byte("REJECTED|" + strSplit[1] + "|name in use|"))
+				conn.Write([]byte("REJECTED|" + strSplit[1] + "|Name in Taken|"))
 				// syscall.Write(fd, []byte("REJECTED|"+strSplit[1]+"name in use|"))
 				conn.Close()
 			}
@@ -166,7 +166,7 @@ func handleConnection() {
 
 				addr := conn.RemoteAddr().String()
 				addr_r := recipient.conn.RemoteAddr().String()
-				s := fmt.Sprintf("%v messaged %v ", addr, addr_r[0], addr_r[1], addr_r[2], addr_r[3])
+				s := fmt.Sprintf("%v messaged %v ", addr, addr_r)
 				logCommands(s)
 
 			} else {
