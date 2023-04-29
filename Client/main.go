@@ -255,7 +255,7 @@ func setupUserNameForm(err string) {
 func setupMessageForm() {
 	messageForm.Clear(true)
 	messageForm.SetButtonsAlign(tview.AlignRight)
-	messageForm.AddInputField("", "", 500, nil, func(text string) {
+	messageForm.AddInputField("", "", 200, nil, func(text string) {
 		userMessage = text
 	})
 	messageForm.AddButton("Send", sendMessage)
