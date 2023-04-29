@@ -36,6 +36,7 @@ var disconChan = make(chan int)
 func sendMessage() {
 	if len(userMessage) > 0 {
 		mChan <- userMessage
+		chatFeed.Write([]byte("[" + userName + "]: " + userMessage + "\n"))
 	}
 }
 
