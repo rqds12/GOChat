@@ -62,11 +62,22 @@ func handleServerMessage(message string) {
 		if err != nil {
 			panic(err)
 		}
+	case "ERROR":
+		//deal with unknown command
+	case "PRIVATE":
+		_, err := chatFeed.Write([]byte("[" + mSplit[1] + "]:" + mSplit[2] + "\n"))
+		if err != nil {
+			panic(err)
+		}
+	case "PRIVRR":
+		//user doesn't exist
+
 	case "TIME":
 		_, err := chatFeed.Write([]byte("Server time is: " + mSplit[1] + "\n"))
 		if err != nil {
 			panic(err)
 		}
+	case "LIST":
 
 	}
 	// Redraws the screen (Writing does not do this automatically for some reason :(
