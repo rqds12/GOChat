@@ -188,7 +188,7 @@ func handleConnection(fd int, clientArray *[]Client) {
 			var message = ""
 			sender, senderIndex := getNameFromFd(*clientArray, fd)
 			recipient, indexOfRecipient := getFdFromName(*clientArray, name)
-			if indexOfRecipient > 0 {
+			if indexOfRecipient >= 0 {
 				message = "PRIVATE|" + sender + "|" + strSplit[2] + "|"
 				broadcastMessage([]Client{(*clientArray)[indexOfRecipient]}, message)
 				sa_r, err1 := syscall.Getpeername(recipient)
