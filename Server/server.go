@@ -74,9 +74,23 @@ func sendMessage(client Client, meessage string) {
 	broadcastMessage([]Client{client}, meessage)
 }
 
+func logCommands(message string) {
+	file, err := os.OpenFile("serverLog.txt", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	time := time.Now().Format("2006-01-02 15:04:05")
+	output := "[" + time + "]: " + message
+	fmt.Fprintf(file, "%s\n", output)
+	fmt.Println(output)
+
+}
+
 func handleConnection(fd int, clientArray *[]Client) {
 	defer syscall.Close(fd)
 	var buf [1024]byte
+
 	for {
 		nbytes, e := syscall.Read(fd, buf[:])
 		//zeroize buf and convert to string
@@ -101,12 +115,29 @@ func handleConnection(fd int, clientArray *[]Client) {
 				//success
 				*clientArray = append(*clientArray, Client{fd: fd, name: strSplit[1]})
 				syscall.Write(fd, []byte("CONNECTED|"+strSplit[1]+"|"))
+				sa, err := syscall.Getpeername(fd)
+
+				if err == nil {
+					port := sa.(*syscall.SockaddrInet4).Port
+					addr := sa.(*syscall.SockaddrInet4).Addr
+					s := fmt.Sprintf("%v.%v.%v.%v:%v connected as %v", addr[0], addr[1], addr[2], addr[3], port, name)
+					logCommands(s)
+				}
+
 				//notify users of newly joined user
 				message := "JOINED|" + name + "|"
 				broadcastMessage(*clientArray, message)
 			} else {
 				//failed
 				//name exists
+				sa, err := syscall.Getpeername(fd)
+
+				if err == nil {
+					port := sa.(*syscall.SockaddrInet4).Port
+					addr := sa.(*syscall.SockaddrInet4).Addr
+					s := fmt.Sprintf("%v.%v.%v.%v:%v tried connecting as %v.  Request rejected", addr[0], addr[1], addr[2], addr[3], port, name)
+					logCommands(s)
+				}
 				syscall.Write(fd, []byte("REJECTED|"+strSplit[1]+"name in use|"))
 				syscall.Close(fd)
 			}
@@ -121,34 +152,68 @@ func handleConnection(fd int, clientArray *[]Client) {
 			rest := temp[index+1:]
 			test = append(test, rest...)
 			broadcastMessage(test, message)
+			//log
+			sa, err := syscall.Getpeername(fd)
 
+			if err == nil {
+				port := sa.(*syscall.SockaddrInet4).Port
+				addr := sa.(*syscall.SockaddrInet4).Addr
+				s := fmt.Sprintf("%v.%v.%v.%v:%v [%v] said %v. ", addr[0], addr[1], addr[2], addr[3], port, name, message)
+				logCommands(s)
+			}
 		case "EXIT":
 			fmt.Println("Exit")
 			name, index := getNameFromFd(*clientArray, fd)
 			message := "LEFT|" + name + "|"
+			//log
+			sa, err := syscall.Getpeername(fd)
+
+			if err == nil {
+				port := sa.(*syscall.SockaddrInet4).Port
+				addr := sa.(*syscall.SockaddrInet4).Addr
+				s := fmt.Sprintf("%v.%v.%v.%v:%v [%v] disconnected. ", addr[0], addr[1], addr[2], addr[3], port, name)
+				logCommands(s)
+			}
+
 			//remove from array
 			syscall.Close(fd)
 			fmt.Println(index)
 			(*clientArray) = append((*clientArray)[:index], (*clientArray)[index+1:]...)
 			broadcastMessage(*clientArray, message)
-			//notify users of left user
-			message = "PUBLIC|SERVER|" + name + " is leaving the server|"
-			fmt.Println(index)
+
 		case "PRIVATE":
 			fmt.Println("Private")
 			name := strSplit[1]
 			recievedMessage := strSplit[2]
 			var message = ""
 			sender, senderIndex := getNameFromFd(*clientArray, fd)
-			_, indexOfRecipient := getFdFromName(*clientArray, name)
+			recipient, indexOfRecipient := getFdFromName(*clientArray, name)
 			if indexOfRecipient > 0 {
 				message = "PRIVATE|" + sender + "|" + strSplit[2] + "|"
 				broadcastMessage([]Client{(*clientArray)[indexOfRecipient]}, message)
+				sa_r, err1 := syscall.Getpeername(recipient)
+				port_r := sa_r.(*syscall.SockaddrInet4).Port
+				addr_r := sa_r.(*syscall.SockaddrInet4).Addr
+				sa, err := syscall.Getpeername(fd)
+
+				if err == nil && err1 == nil {
+					port := sa.(*syscall.SockaddrInet4).Port
+					addr := sa.(*syscall.SockaddrInet4).Addr
+					s := fmt.Sprintf("%v.%v.%v.%v:%v messaged %v.%v.%v.%v:%v", addr[0], addr[1], addr[2], addr[3], port, addr_r[0], addr_r[1], addr_r[2], addr_r[3], port_r)
+					logCommands(s)
+				}
 			} else {
 				//send error
 				message = "PRIVERR|" + name + "|" + recievedMessage + "|"
 				broadcastMessage([]Client{(*clientArray)[senderIndex]}, message)
+				sa, err := syscall.Getpeername(fd)
 
+				if err == nil {
+					port := sa.(*syscall.SockaddrInet4).Port
+					addr := sa.(*syscall.SockaddrInet4).Addr
+					s := fmt.Sprintf("%v.%v.%v.%v:%v attempted to message a nonexistent user", addr[0], addr[1], addr[2], addr[3], port)
+					logCommands(s)
+				}
 			}
 		case "LIST":
 			fmt.Println("List")
@@ -170,6 +235,14 @@ func handleConnection(fd int, clientArray *[]Client) {
 			message := "ERROR|" + strSplit[0] + "|"
 			_, senderIndex := getNameFromFd(*clientArray, fd)
 			broadcastMessage([]Client{(*clientArray)[senderIndex]}, message)
+			sa, err := syscall.Getpeername(fd)
+
+			if err == nil {
+				port := sa.(*syscall.SockaddrInet4).Port
+				addr := sa.(*syscall.SockaddrInet4).Addr
+				s := fmt.Sprintf("%v.%v.%v.%v:%v attempted to issue invalid command %v", addr[0], addr[1], addr[2], addr[3], port, strSplit[0:])
+				logCommands(s)
+			}
 
 		}
 
@@ -232,10 +305,12 @@ func main() {
 		for ev := 0; ev < nevents; ev++ {
 			if int(events[ev].Fd) == fd {
 				connFd, _, err := syscall.Accept(fd)
+
 				if err != nil {
 					fmt.Println("accept: ", err)
 					continue
 				}
+
 				syscall.SetNonblock(fd, true)
 				event.Events = syscall.EPOLLIN | EPOLLET
 				event.Fd = int32(connFd)
@@ -243,6 +318,11 @@ func main() {
 					fmt.Print("epoll_ctl: ", connFd, err)
 					os.Exit(1)
 				}
+				sa, _ := syscall.Getpeername(connFd)
+				port := sa.(*syscall.SockaddrInet4).Port
+				addr := sa.(*syscall.SockaddrInet4).Addr
+				s := fmt.Sprintf("Client connected: %v.%v.%v.%v:%v", addr[0], addr[1], addr[2], addr[3], port)
+				logCommands(s)
 			} else {
 				go handleConnection(int(events[ev].Fd), &clientArray)
 			}
