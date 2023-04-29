@@ -171,7 +171,7 @@ func setupUserNameForm() {
 // Populates the message form
 func setupMessageForm() {
 	sendButton := tview.NewButton("Send").SetSelectedFunc(sendMessage)
-	exitButton := tview.NewButton("Exit")
+	exitButton := tview.NewButton("Exit").SetSelectedFunc(disconnect)
 	messageForm.SetDirection(tview.FlexRow)
 	messageForm.AddItem(messageField, 1, 0, true)
 	messageForm.AddItem(sendButton, 1, 0, true)
