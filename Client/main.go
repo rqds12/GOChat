@@ -35,6 +35,7 @@ func sendMessage() {
 	if len(userMessage) > 0 {
 		mChan <- userMessage
 		chatFeed.Write([]byte("[" + userName + "]: " + userMessage + "\n"))
+		userMessage = ""
 		setupMessageForm()
 	}
 }
@@ -225,6 +226,8 @@ func handleConn() {
 func setupUserNameForm(err string) {
 	userNameForm.Clear(true)
 	userNameForm.SetButtonsAlign(tview.AlignLeft)
+	userName = ""
+	ipAddr = ""
 	userNameForm.AddInputField("Username", "", 50, func(textToCheck string, lastChar rune) bool {
 		return textToCheck != ""
 	}, func(enteredUserName string) {
