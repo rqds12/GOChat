@@ -197,3 +197,17 @@
 [2023-04-29 18:57:48]: 127.0.0.1:49650  connected as a
 [2023-04-29 18:57:57]: 127.0.0.1:38848 tried connecting as a.  Request rejected
 [2023-04-29 18:57:57]: 127.0.0.1:38848 [] disconnected. 
+[2023-04-29 19:58:08]: 127.0.0.1:55375  connected as tim
+[2023-04-29 19:58:19]: 127.0.0.1:55388 tried connecting as tim.  Request rejected
+[2023-04-29 19:58:19]: 127.0.0.1:55388 [] disconnected. 
+[2023-04-29 19:58:23]: 127.0.0.1:55375 [tim] disconnected. 
+[2023-04-29 19:58:32]: 127.0.0.1:55389  connected as tim
+[2023-04-29 19:58:45]: 127.0.0.1:55390 tried connecting as tim.  Request rejected
+[2023-04-29 19:58:45]: 127.0.0.1:55390 [] disconnected. 
+[2023-04-29 19:58:57]: 127.0.0.1:55391  connected as jim
+[2023-04-29 19:59:02]: 127.0.0.1:55389 tim said PUBLIC|tim|hey|. 
+[2023-04-29 19:59:06]: 127.0.0.1:55389 [tim] disconnected. 
+[2023-04-29 19:59:21]: 127.0.0.1:55394  connected as tim
+[2023-04-29 19:59:26]: 127.0.0.1:55391 jim said PUBLIC|jim|hey|. 
+[2023-04-29 19:59:31]: 127.0.0.1:55391 [jim] disconnected. 
+[2023-04-29 19:59:32]: 127.0.0.1:55394 [tim] disconnected. 

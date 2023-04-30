@@ -191,6 +191,15 @@ func disconnector(conn net.Conn, m *sync.Mutex) {
 
 // Function to connect to the server, then pass off socket reads and socket writes to the appropriate threads
 func handleConn() {
+	if userName == "" {
+		writeError("Name must not be empty.")
+		return
+	}
+	// Check if name contains whitespace
+	if strings.Contains(userName, " ") {
+		writeError("Name must not contain spaces.")
+		return
+	}
 	conn, err := net.Dial(SERVER_TYPE, ipAddr+":"+SERVER_PORT)
 	if err != nil {
 		writeError("Failed to connect to that IP.")
