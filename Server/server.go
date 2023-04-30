@@ -115,17 +115,24 @@ func handleConnection() {
 			if len(strSplit[1]) <= 50 {
 
 				if clientExist.name == "" {
-					//success
-					clientArray = append(clientArray, Client{conn: conn, name: strSplit[1]})
-					conn.Write([]byte("CONNECTED|" + strSplit[1] + "|"))
-					// sa, err :=
-					addr := conn.RemoteAddr().String()
-					s := fmt.Sprintf("%v  connected as %v", addr, name)
-					logCommands(s)
+					if strings.Contains(strSplit[1], " ") {
+						addr := conn.RemoteAddr().String()
+						s := fmt.Sprintf("%v tried connecting as %v.  Name has spaces. Request rejected", addr, name)
+						logCommands(s)
+						conn.Write([]byte("REJECTED|" + strSplit[1] + "|Name has spaces|"))
+					} else {
+						//success
+						clientArray = append(clientArray, Client{conn: conn, name: strSplit[1]})
+						conn.Write([]byte("CONNECTED|" + strSplit[1] + "|"))
+						// sa, err :=
+						addr := conn.RemoteAddr().String()
+						s := fmt.Sprintf("%v  connected as %v", addr, name)
+						logCommands(s)
 
-					//notify users of newly joined user
-					message := "JOINED|" + name + "|"
-					broadcastMessage(clientArray, message)
+						//notify users of newly joined user
+						message := "JOINED|" + name + "|"
+						broadcastMessage(clientArray, message)
+					}
 				} else {
 					//failed
 					//name exists
