@@ -168,9 +168,14 @@ func handleConnection() {
 			s := fmt.Sprintf("%v [%v] disconnected. ", addr, name)
 			logCommands(s)
 			//remove from array
-			conn.Close()
-			(clientArray) = append((clientArray)[:index], (clientArray)[index+1:]...)
-			broadcastMessage(clientArray, message)
+			if index == -1 {
+				conn.Close()
+			} else {
+				// fmt.Println(index)
+				clientArray = append((clientArray)[:index], (clientArray)[index+1:]...)
+				conn.Close()
+				broadcastMessage(clientArray, message)
+			}
 
 		case "PRIVATE":
 			if len(strSplit[2]) > 200 {
@@ -235,13 +240,13 @@ func handleConn(c Client) {
 		buff := make([]byte, 1024)
 		m, err := conn.Read([]byte(buff))
 		if err != nil {
-			name, index := getNameFromClient(clientArray, Client{conn, ""})
-			if index > -1 {
-				addr := conn.RemoteAddr().String()
-				s := fmt.Sprintf("%v [%v] disconnected. ", addr, name)
-				logCommands(s)
-				(clientArray) = append((clientArray)[:index], (clientArray)[index+1:]...)
-			}
+			// name, index := getNameFromClient(clientArray, Client{conn, ""})
+			// if index > -1 {
+			// 	addr := conn.RemoteAddr().String()
+			// 	s := fmt.Sprintf("%v [%v] disconnected. ", addr, name)
+			// 	logCommands(s)
+			// 	// (clientArray) = append((clientArray)[:index], (clientArray)[index+1:]...)
+			// }
 			return
 			// panic(err)
 		}
