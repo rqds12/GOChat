@@ -168,9 +168,13 @@ func handleConnection() {
 			s := fmt.Sprintf("%v [%v] disconnected. ", addr, name)
 			logCommands(s)
 			//remove from array
-			conn.Close()
-			(clientArray) = append((clientArray)[:index], (clientArray)[index+1:]...)
-			broadcastMessage(clientArray, message)
+			if index == -1 {
+				conn.Close()
+			} else {
+				clientArray = append((clientArray)[:index], (clientArray)[index+1:]...)
+				conn.Close()
+				broadcastMessage(clientArray, message)
+			}
 
 		case "PRIVATE":
 			if len(strSplit[2]) > 200 {
